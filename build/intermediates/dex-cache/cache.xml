@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/home/mawa/AndroidStudioProjects/HomeCamera/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="c95ba8152923e4872e86a82cfcba9a51c0214328">
+        <dex dex="/home/mawa/AndroidStudioProjects/HomeCamera/app/build/intermediates/pre-dexed/debug/classes-ad21b3ab05ccb7e4411eb1940802a8586da776ec.jar" />
+    </item>
+    <item
+        jar="/home/mawa/AndroidStudioProjects/HomeCamera/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.1.1/jars/libs/internal_impl-22.1.1.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="9e070ad32b2700b0343e8e0cccc437733d91ba3a">
+        <dex dex="/home/mawa/AndroidStudioProjects/HomeCamera/app/build/intermediates/pre-dexed/debug/internal_impl-22.1.1-cdb2cbb6f616d1a0cf908762ba9f965debda384c.jar" />
+    </item>
+    <item
+        jar="/home/mawa/AndroidStudioProjects/HomeCamera/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.1.1/jars/classes.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="a3ff3c506644c820eb2bdf06e8339f72be578551">
+        <dex dex="/home/mawa/AndroidStudioProjects/HomeCamera/app/build/intermediates/pre-dexed/debug/classes-ec2595486e887331b066d6e52111d0976f89784b.jar" />
+    </item>
+    <item
+        jar="/opt/android/extras/android/m2repository/com/android/support/support-annotations/22.1.1/support-annotations-22.1.1.jar"
+        jumboMode="false"
+        revision="22.0.1"
+        sha1="01d051a6bfb1218b1db2d3a5af0480ac2c25c42a">
+        <dex dex="/home/mawa/AndroidStudioProjects/HomeCamera/app/build/intermediates/pre-dexed/debug/support-annotations-22.1.1-bbd6f1aa8a783943c18f79b11e7baee0e93da259.jar" />
+    </item>
+
+</items>

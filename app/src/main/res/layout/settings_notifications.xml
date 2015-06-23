@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RelativeLayout
+        android:id="@+id/settings_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <View
+            android:id="@+id/strutLowBattery"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:id="@+id/textViewLowBattery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/low_batery"
+            android:layout_alignRight="@id/strutLowBattery"
+            android:layout_alignParentLeft="true"
+            android:gravity="center_vertical" />
+
+        <Switch
+            android:id="@+id/switchLowBattery"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:layout_alignLeft="@id/strutLowBattery"
+            android:gravity="center_vertical" />
+
+
+        <View
+            android:id="@+id/strutWifiLost"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:id="@+id/textViewWifiLost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/wifi_lost"
+            android:layout_below="@id/textViewLowBattery"
+            android:layout_alignRight="@id/strutWifiLost"
+            android:layout_alignParentLeft="true"
+            android:gravity="center_vertical" />
+
+        <Switch
+            android:id="@+id/switchWifiLost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:layout_alignLeft="@id/strutWifiLost"
+            android:layout_below="@id/switchLowBattery"
+            android:gravity="center_vertical" />
+
+    </RelativeLayout>
+</merge>

@@ -14,7 +14,7 @@
         android:layout_marginRight="10sp"
         android:background="@drawable/header_bg"
         android:gravity="center_horizontal"
-        android:orientation="horizontal" >
+        android:orientation="horizontal">
 
         <com.mawa.homecamera.accordion.widget.ToggleImageLabeledButton
             android:id="@+id/foldButton"
