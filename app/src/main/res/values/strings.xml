@@ -4,7 +4,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="low_batery">Low batery</string>
+    <string name="low_battery">Low battery</string>
     <string name="wifi_lost">WiFi lost</string>
 
     <string-array name="accordion_sections">

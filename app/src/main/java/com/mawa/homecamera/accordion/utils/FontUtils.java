@@ -12,13 +12,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class FontUtils {
-    public static final String TAG_LIGHT = "light";
+    private static final String TAG_LIGHT = "light";
 
-    public static final String TAG_CONDENSED = "condensed";
+    private static final String TAG_CONDENSED = "condensed";
 
-    public static final String TAG_BOLD = "bold";
-
-    private static final int ICE_CREAM_SANDWITCH = 14;
+    private static final String TAG_BOLD = "bold";
 
     private static Typeface normal;
 
@@ -63,7 +61,7 @@ public class FontUtils {
     }
 
     public static void setCustomFont(View topView, AssetManager assetsManager) {
-        if (Build.VERSION.SDK_INT >= ICE_CREAM_SANDWITCH) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             return;
         }
         initTypefaces(assetsManager);

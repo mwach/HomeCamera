@@ -2,17 +2,14 @@
     xmlns:accordion="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@android:color/white"
     android:orientation="vertical">
-
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
 
         <com.mawa.homecamera.accordion.widget.AccordionView
             android:id="@+id/accordion_view"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="#fff5f5f5"
+            android:orientation="vertical"
             accordion:header_layout_fold_button_id="@id/foldButton"
             accordion:header_layout_id="@layout/accordion_header"
             accordion:header_layout_label_id="@id/foldText"
@@ -20,12 +17,9 @@
             accordion:section_container="@layout/accordion_section"
             accordion:section_container_parent="@id/section_content"
             accordion:section_headers="@array/accordion_sections"
-            accordion:section_visibility="@array/accordion_visibility"
-            android:background="#fff5f5f5"
-            android:orientation="vertical">
+            accordion:section_visibility="@array/accordion_visibility">
 
             <include layout="@layout/settings_notifications" />
 
         </com.mawa.homecamera.accordion.widget.AccordionView>
-    </ScrollView>
 </LinearLayout>

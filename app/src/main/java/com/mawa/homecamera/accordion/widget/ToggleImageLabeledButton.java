@@ -9,8 +9,6 @@
  */
 package com.mawa.homecamera.accordion.widget;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
@@ -19,7 +17,9 @@ import android.widget.ImageView;
 
 import com.mawa.homecamera.R;
 
-public class ToggleImageLabeledButton extends ImageView {
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public final class ToggleImageLabeledButton extends ImageView {
 
     private int imageOn;
     private int imageOff;
@@ -31,9 +31,12 @@ public class ToggleImageLabeledButton extends ImageView {
         if (attrs != null) {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.image_labeled_button, 0, 0);
             imageOn = a.getResourceId(R.styleable.image_labeled_button_icon_resource, 0);
+            a.recycle();
+
             a = context.obtainStyledAttributes(attrs, R.styleable.toggle_image_labeled_button, 0, 0);
             imageOff = a.getResourceId(R.styleable.toggle_image_labeled_button_icon_resource_off, 0);
             setImageResource(imageOff);
+            a.recycle();
         }
 
     }
