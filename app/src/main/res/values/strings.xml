@@ -6,6 +6,7 @@
     <string name="title_activity_settings">Settings</string>
     <string name="low_battery">Low battery</string>
     <string name="wifi_lost">WiFi lost</string>
+    <string name="recording_started">Recording started</string>
 
     <string-array name="accordion_sections">
         <item>Notifications</item>
