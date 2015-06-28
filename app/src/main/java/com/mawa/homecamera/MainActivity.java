@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
@@ -20,8 +21,11 @@ import static android.widget.Toast.LENGTH_LONG;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     Preview preview;
     Camera camera;
+
+    ImageButton recordButton = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,13 +33,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ImageButton recordButton = (ImageButton) findViewById(R.id.record_button);
-        recordButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startRecording();
-            }
-        });
+        recordButton = (ImageButton) findViewById(R.id.record_button);
+        enableGuiRecording();
 
         preview = new Preview(this, (SurfaceView) findViewById(R.id.surface_view));
         preview.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -43,19 +42,45 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    boolean cameraFront = false;
+    private int findFrontFacingCamera() {
+        int cameraId = -1;
+        // Search for the front facing camera
+        int numberOfCameras = Camera.getNumberOfCameras();
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(i, info);
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                cameraId = i;
+                cameraFront = true;
+                break;
+            }
+        }
+        return cameraId;
+    }
+
+    private int findBackFacingCamera() {
+        int cameraId = -1;
+        //Search for the back facing camera
+        //get the number of cameras
+        int numberOfCameras = Camera.getNumberOfCameras();
+        //for every camera check
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.CameraInfo info = new Camera.CameraInfo();
+            Camera.getCameraInfo(i, info);
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                cameraId = i;
+                cameraFront = false;
+                break;
+            }
+        }
+        return cameraId;
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        int numCams = Camera.getNumberOfCameras();
-        if (numCams > 0) {
-            try {
-                camera = Camera.open(0);
-                camera.startPreview();
-                preview.setCamera(camera);
-            } catch (RuntimeException ex) {
-                ex.printStackTrace();
-            }
-        }
+
     }
 
     @Override
@@ -76,7 +101,56 @@ public class MainActivity extends AppCompatActivity {
 
     private void startRecording() {
 
+        acquireCamera();
+        disableGuiRecording();
         Toast.makeText(MainActivity.this, getString(R.string.recording_started), LENGTH_LONG).show();
+    }
+
+    private void stopRecording() {
+
+        Toast.makeText(MainActivity.this, getString(R.string.recording_ended), LENGTH_LONG).show();
+        enableGuiRecording();
+        releaseCamera();
+    }
+
+    private void acquireCamera() {
+        int numCams = Camera.getNumberOfCameras();
+        if (numCams > 0) {
+            try {
+                camera = Camera.open(0);
+                preview.refreshCamera(camera);
+            } catch (RuntimeException ex) {
+                Log.e(TAG, "acquireCamera", ex);
+            }
+        }
+    }
+
+    private void releaseCamera() {
+        preview.refreshCamera(null);
+        if(camera != null) {
+            camera.release();
+            camera = null;
+        }
+    }
+
+    private void disableGuiRecording() {
+        recordButton.setImageResource(R.mipmap.ic_launcher);
+        recordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopRecording();
+            }
+        });
+    }
+
+    private void enableGuiRecording() {
+        recordButton.setImageResource(R.mipmap.record);
+        recordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startRecording();
+            }
+        });
     }
 
 

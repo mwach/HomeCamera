@@ -151,13 +151,32 @@ public class Preview extends ViewGroup implements SurfaceHolder.Callback {
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-        if (mCamera != null) {
-            Camera.Parameters parameters = mCamera.getParameters();
-            parameters.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-            requestLayout();
 
-            mCamera.setParameters(parameters);
-            mCamera.startPreview();
+        refreshCamera(mCamera);
+    }
+
+    public void refreshCamera(Camera camera) {
+        if (mHolder.getSurface() == null) {
+            // preview surface does not exist
+            return;
+        }
+        // stop preview before making changes
+        try {
+            mCamera.stopPreview();
+        } catch (Exception e) {
+            // ignore: tried to stop a non-existent preview
+        }
+        // set preview size and make any resize, rotate or
+        // reformatting changes here
+        // start preview with new settings
+        setCamera(camera);
+        if(mCamera != null) {
+            try {
+                mCamera.setPreviewDisplay(mHolder);
+                mCamera.startPreview();
+            } catch (Exception e) {
+                Log.d(VIEW_LOG_TAG, "Error starting camera preview: " + e.getMessage());
+            }
         }
     }
 
