@@ -1,13 +1,17 @@
 package com.mawa.homecamera;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageButton;
@@ -16,16 +20,19 @@ import android.widget.Toast;
 
 import com.mawa.homecamera.camera.Preview;
 
+import java.io.IOException;
+
 import static android.widget.Toast.LENGTH_LONG;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    Preview preview;
     Camera camera;
+    private TextureView textureView;
 
     ImageButton recordButton = null;
+    private SurfaceTexture surface = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +40,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        textureView = (TextureView)findViewById(R.id.texture_view);
+        textureView.setSurfaceTextureListener(this);
+
         recordButton = (ImageButton) findViewById(R.id.record_button);
         enableGuiRecording();
 
-        preview = new Preview(this, (SurfaceView) findViewById(R.id.surface_view));
-        preview.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        ((RelativeLayout) findViewById(R.id.camera_layout)).addView(preview);
 
     }
 
@@ -78,16 +85,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-    }
-
-    @Override
     protected void onPause() {
         if (camera != null) {
             camera.stopPreview();
-            preview.setCamera(null);
             camera.release();
             camera = null;
         }
@@ -96,14 +96,28 @@ public class MainActivity extends AppCompatActivity {
 
     private void resetCam() {
         camera.startPreview();
-        preview.setCamera(camera);
+    }
+
+    private void startPreview() {
+        try {
+            camera.setPreviewTexture(surface);
+            camera.startPreview();
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            // Something bad happened
+        }
     }
 
     private void startRecording() {
 
-        acquireCamera();
-        disableGuiRecording();
-        Toast.makeText(MainActivity.this, getString(R.string.recording_started), LENGTH_LONG).show();
+        if (getCamera() != null) {
+
+            startPreview();
+            disableGuiRecording();
+            Toast.makeText(MainActivity.this, getString(R.string.recording_started), LENGTH_LONG).show();
+        }else{
+            Toast.makeText(MainActivity.this, getString(R.string.recording_started), LENGTH_LONG).show();
+        }
     }
 
     private void stopRecording() {
@@ -113,20 +127,24 @@ public class MainActivity extends AppCompatActivity {
         releaseCamera();
     }
 
-    private void acquireCamera() {
+    private Camera getCamera() {
+
+        if(camera != null){
+            return camera;
+        }
         int numCams = Camera.getNumberOfCameras();
         if (numCams > 0) {
             try {
                 camera = Camera.open(0);
-                preview.refreshCamera(camera);
             } catch (RuntimeException ex) {
-                Log.e(TAG, "acquireCamera", ex);
+                Log.e(TAG, "getCamera", ex);
             }
         }
+        return camera;
     }
 
+
     private void releaseCamera() {
-        preview.refreshCamera(null);
         if(camera != null) {
             camera.release();
             camera = null;
@@ -180,5 +198,38 @@ public class MainActivity extends AppCompatActivity {
     private void openSettingsActivity() {
         Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
         startActivity(settingsIntent);
+    }
+
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        this.surface = surface;
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        camera.stopPreview();
+        camera.release();
+        return true;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+//        new Handler().post(new Runnable() {
+//            public void run() {
+//                Bitmap bmp = textureView.getBitmap();
+//                int[] pixelArray = new int[bmp.getHeight() * bmp.getWidth()];
+//                bmp.getPixels(pixelArray, 0, 0, 0, 0, bmp.getWidth(), bmp.getHeight());
+//                int imgW = bmp.getWidth();
+//                int imgH = bmp.getHeight();
+//                Log.e(TAG, "" + bmp.getHeight());
+//            }
+//        });
+        Log.e(TAG, "" + 1);
+
     }
 }

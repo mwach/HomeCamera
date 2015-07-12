@@ -16,8 +16,8 @@
         android:layout_centerInParent="true"
         >
 
-        <SurfaceView
-            android:id="@+id/surface_view"
+        <TextureView
+            android:id="@+id/texture_view"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent" />
     </RelativeLayout>
