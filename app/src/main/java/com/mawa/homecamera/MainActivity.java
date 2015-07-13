@@ -1,5 +1,7 @@
 package com.mawa.homecamera;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
@@ -10,15 +12,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.mawa.homecamera.camera.Preview;
+import com.mawa.homecamera.processing.video.MotionDetector;
 
 import java.io.IOException;
 
@@ -28,11 +27,19 @@ import static android.widget.Toast.LENGTH_LONG;
 public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    Camera camera;
+
+    private Settings settings;
+
+    private static final int UNDEFINED = -1;
+
+    private Camera camera;
     private TextureView textureView;
 
-    ImageButton recordButton = null;
+    private ImageButton recordButton = null;
     private SurfaceTexture surface = null;
+
+    private boolean isRecording = false;
+    private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,68 +47,58 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        settings = new Settings();
+
         textureView = (TextureView)findViewById(R.id.texture_view);
         textureView.setSurfaceTextureListener(this);
 
         recordButton = (ImageButton) findViewById(R.id.record_button);
-        enableGuiRecording();
+
+        detectCameras();
+        setGuiIDLEMode();
 
 
     }
 
-    boolean cameraFront = false;
-    private int findFrontFacingCamera() {
-        int cameraId = -1;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(settings.getDefaultCameraId() == UNDEFINED){
+            showAlertDialogAndExit(getString(R.string.camera_not_found));
+        }
+    }
+
+    private void detectCameras() {
+        settings.setBackCameraId(findCameraId(Camera.CameraInfo.CAMERA_FACING_BACK));
+        settings.setFrontCameraId(findCameraId(Camera.CameraInfo.CAMERA_FACING_FRONT));
+    }
+
+    private int findCameraId(int cameraId) {
         // Search for the front facing camera
         int numberOfCameras = Camera.getNumberOfCameras();
         for (int i = 0; i < numberOfCameras; i++) {
             Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(i, info);
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                cameraId = i;
-                cameraFront = true;
-                break;
+            if (info.facing == cameraId) {
+                return cameraId;
             }
         }
-        return cameraId;
-    }
-
-    private int findBackFacingCamera() {
-        int cameraId = -1;
-        //Search for the back facing camera
-        //get the number of cameras
-        int numberOfCameras = Camera.getNumberOfCameras();
-        //for every camera check
-        for (int i = 0; i < numberOfCameras; i++) {
-            Camera.CameraInfo info = new Camera.CameraInfo();
-            Camera.getCameraInfo(i, info);
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                cameraId = i;
-                cameraFront = false;
-                break;
-            }
-        }
-        return cameraId;
+        return UNDEFINED;
     }
 
     @Override
     protected void onPause() {
-        if (camera != null) {
-            camera.stopPreview();
-            camera.release();
-            camera = null;
-        }
+        releaseCamera();
         super.onPause();
     }
 
-    private void resetCam() {
-        camera.startPreview();
-    }
-
+    private MotionDetector md = new MotionDetector();
     private void startPreview() {
         try {
             camera.setPreviewTexture(surface);
+            camera.setPreviewCallback(md);
             camera.startPreview();
+            isRecording = true;
         } catch (IOException ioe) {
             ioe.printStackTrace();
             // Something bad happened
@@ -112,8 +109,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         if (getCamera() != null) {
 
+            setGuiRecordMode();
             startPreview();
-            disableGuiRecording();
             Toast.makeText(MainActivity.this, getString(R.string.recording_started), LENGTH_LONG).show();
         }else{
             Toast.makeText(MainActivity.this, getString(R.string.recording_started), LENGTH_LONG).show();
@@ -123,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private void stopRecording() {
 
         Toast.makeText(MainActivity.this, getString(R.string.recording_ended), LENGTH_LONG).show();
-        enableGuiRecording();
+        setGuiIDLEMode();
         releaseCamera();
     }
 
@@ -132,26 +129,26 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         if(camera != null){
             return camera;
         }
-        int numCams = Camera.getNumberOfCameras();
-        if (numCams > 0) {
+        cameraId = settings.getDefaultCameraId();
+
             try {
-                camera = Camera.open(0);
+                camera = Camera.open(cameraId);
             } catch (RuntimeException ex) {
                 Log.e(TAG, "getCamera", ex);
             }
-        }
         return camera;
     }
 
 
     private void releaseCamera() {
-        if(camera != null) {
+        if(getCamera() != null) {
             camera.release();
             camera = null;
         }
+        isRecording = false;
     }
 
-    private void disableGuiRecording() {
+    private void setGuiRecordMode() {
         recordButton.setImageResource(R.mipmap.ic_launcher);
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,9 +156,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 stopRecording();
             }
         });
+        textureView.setVisibility(View.VISIBLE);
     }
 
-    private void enableGuiRecording() {
+    private void setGuiIDLEMode() {
         recordButton.setImageResource(R.mipmap.record);
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -169,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 startRecording();
             }
         });
+        textureView.setVisibility(View.GONE);
     }
 
 
@@ -212,24 +211,40 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        camera.stopPreview();
-        camera.release();
+        releaseCamera();
         return true;
     }
 
+    private MotionDetector motionDetector;
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
 //        new Handler().post(new Runnable() {
 //            public void run() {
 //                Bitmap bmp = textureView.getBitmap();
-//                int[] pixelArray = new int[bmp.getHeight() * bmp.getWidth()];
-//                bmp.getPixels(pixelArray, 0, 0, 0, 0, bmp.getWidth(), bmp.getHeight());
+////                int[] pixelArray = new int[bmp.getHeight() * bmp.getWidth()];
+////                bmp.getPixels(pixelArray, 0, 0, 0, 0, bmp.getWidth(), bmp.getHeight());
 //                int imgW = bmp.getWidth();
 //                int imgH = bmp.getHeight();
 //                Log.e(TAG, "" + bmp.getHeight());
 //            }
 //        });
-        Log.e(TAG, "" + 1);
+//        Log.e(TAG, "" + 1);
 
     }
+
+    private void showAlertDialogAndExit(String message){
+        AlertDialog alert = new AlertDialog.Builder(MainActivity.this)
+                .create();
+        alert.setTitle(getString(R.string.error));
+        alert.setMessage(message);
+        alert.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.close_app), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        alert.show();
+
+    }
+
 }

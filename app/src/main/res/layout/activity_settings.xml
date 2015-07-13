@@ -20,6 +20,7 @@
             accordion:section_visibility="@array/accordion_visibility">
 
             <include layout="@layout/settings_notifications" />
+            <include layout="@layout/settings_camera" />
 
         </com.mawa.homecamera.accordion.widget.AccordionView>
 </LinearLayout>

@@ -8,11 +8,29 @@
     <string name="wifi_lost">WiFi lost</string>
     <string name="recording_started">Recording started</string>
     <string name="recording_ended">Recording finished</string>
+    <string name="camera_not_found">Could not connect to the camera</string>
 
     <string-array name="accordion_sections">
         <item>Notifications</item>
+        <item>Camera settings</item>
     </string-array>
     <integer-array name="accordion_visibility">
         <item>1</item>
+        <item>1</item>
     </integer-array>
+    <string name="title_activity_camera_capture">CameraCaptureActivity</string>
+
+    <string-array name="cameraFilterNames">
+        <item>Normal</item>
+        <item>Black &amp; white</item>
+        <item>Filter: blur</item>
+        <item>Filter: sharpen</item>
+        <item>Filter: edge detect</item>
+        <item>Filter: emboss</item>
+    </string-array>
+
+    <string name="toggleRecordingOn">Start recording</string>
+    <string name="toggleRecordingOff">Stop recording</string>
+    <string name="error">Error</string>
+    <string name="close_app">Exit</string>
 </resources>
