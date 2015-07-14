@@ -8,6 +8,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -28,8 +29,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private Settings settings;
-
     private static final int UNDEFINED = -1;
 
     private Camera camera;
@@ -47,8 +46,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        settings = new Settings();
-
         textureView = (TextureView)findViewById(R.id.texture_view);
         textureView.setSurfaceTextureListener(this);
 
@@ -63,14 +60,20 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     protected void onResume() {
         super.onResume();
-        if(settings.getDefaultCameraId() == UNDEFINED){
+        if(Settings.getDefaultCameraId(MainActivity.this) == UNDEFINED){
             showAlertDialogAndExit(getString(R.string.camera_not_found));
         }
     }
 
     private void detectCameras() {
-        settings.setBackCameraId(findCameraId(Camera.CameraInfo.CAMERA_FACING_BACK));
-        settings.setFrontCameraId(findCameraId(Camera.CameraInfo.CAMERA_FACING_FRONT));
+        int frontCameraId = findCameraId(Camera.CameraInfo.CAMERA_FACING_FRONT);
+        int backCameraId = findCameraId(Camera.CameraInfo.CAMERA_FACING_BACK);
+        if(frontCameraId == UNDEFINED && backCameraId == UNDEFINED){
+            showAlertDialogAndExit(getString(R.string.back_camera));
+        }
+        Settings.setCameraId(MainActivity.this, Settings.BACK_CAMERA, backCameraId);
+        Settings.setCameraId(MainActivity.this, Settings.FRONT_CAMERA, frontCameraId);
+        Settings.setDefaultCameraId(MainActivity.this, frontCameraId != UNDEFINED ? frontCameraId : backCameraId);
     }
 
     private int findCameraId(int cameraId) {
@@ -129,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         if(camera != null){
             return camera;
         }
-        cameraId = settings.getDefaultCameraId();
+        cameraId = Settings.getDefaultCameraId(MainActivity.this);
 
             try {
                 camera = Camera.open(cameraId);

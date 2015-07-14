@@ -7,53 +7,27 @@
         android:layout_height="wrap_content">
 
         <View
-            android:id="@+id/strutLowBattery"
+            android:id="@+id/struct_camera_settings"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_centerHorizontal="true" />
 
         <TextView
-            android:id="@+id/textViewLowBattery"
+            android:id="@+id/struct_preferable_camera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:layout_alignRight="@id/strutLowBattery"
+            android:layout_alignRight="@id/struct_camera_settings"
             android:gravity="center_vertical"
-            android:text="@string/low_battery" />
+            android:text="@string/camera_to_be_used" />
 
-        <Switch
-            android:id="@+id/switchLowBattery"
+        <Spinner
+            android:id="@+id/spinner_preferable_camera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@id/strutLowBattery"
-            android:checked="true"
-            android:gravity="center_vertical" />
-
-
-        <View
-            android:id="@+id/strutWifiLost"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_centerHorizontal="true" />
-
-        <TextView
-            android:id="@+id/textViewWifiLost"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignRight="@id/strutWifiLost"
-            android:layout_below="@id/textViewLowBattery"
+            android:layout_alignLeft="@id/struct_camera_settings"
             android:gravity="center_vertical"
-            android:text="@string/wifi_lost" />
-
-        <Switch
-            android:id="@+id/switchWifiLost"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@id/strutWifiLost"
-            android:layout_below="@id/switchLowBattery"
-            android:checked="true"
-            android:gravity="center_vertical" />
+            />
 
     </RelativeLayout>
 </merge>

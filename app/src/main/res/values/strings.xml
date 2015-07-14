@@ -10,6 +10,10 @@
     <string name="recording_ended">Recording finished</string>
     <string name="camera_not_found">Could not connect to the camera</string>
 
+    <string name="front_camera">Front camera</string>
+    <string name="back_camera">Back camera</string>
+
+
     <string-array name="accordion_sections">
         <item>Notifications</item>
         <item>Camera settings</item>
@@ -33,4 +37,5 @@
     <string name="toggleRecordingOff">Stop recording</string>
     <string name="error">Error</string>
     <string name="close_app">Exit</string>
+    <string name="camera_to_be_used">Camera</string>
 </resources>
