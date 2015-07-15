@@ -89,20 +89,6 @@ public final class AccordionView extends LinearLayout {
         }
     }
 
-    public View getChildById(int id) {
-        for (View view : wrappedChildren) {
-            View v = view.findViewById(id);
-            if (v != null) {
-                return v;
-            }
-        }
-        return null;
-    }
-
-    public View getSectionByChildId(int id) {
-        return sectionByChildId.get(id);
-    }
-
     private View getView(final LayoutInflater inflater, int i, boolean hide) {
         final View container = inflater.inflate(sectionContainer, null);
         container.setLayoutParams(new ListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0));
@@ -213,17 +199,6 @@ public final class AccordionView extends LinearLayout {
         initialized = true;
 
         super.onFinishInflate();
-    }
-
-    /**
-     *
-     * @param position position
-     * @return visibility
-     *          {@link View#GONE} and {@link View#VISIBLE}
-     */
-    public int getSectionVisibility(int position) {
-        assertWrappedChildrenPosition(position);
-        return wrappedChildren[position].getVisibility();
     }
 
     /**

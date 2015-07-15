@@ -6,38 +6,59 @@ import android.content.SharedPreferences;
 /**
  * Created by mawa on 12/07/15.
  */
-public class Settings {
+class Settings {
 
-    private static final int UNDEFINED = -1;
+    static final int UNDEFINED = -1;
 
     public static final int FRONT_CAMERA = 1;
     public static final int BACK_CAMERA = 2;
 
-    private static final String FRONT_CAMERA_ID = "FRONT_CAMERA_ID";
-    private static final String BACK_CAMERA_ID = "BACK_CAMERA_ID";
-    private static final String DEFAULT_CAMERA_ID = "DEFAULT_CAMERA_ID";
+    private static int frontCameraId = UNDEFINED;
+    private static int backCameraId = UNDEFINED;
+
+    private static final String DEFAULT_CAMERA = "DEFAULT_CAMERA";
 
     private Settings(){}
 
-    public static void setCameraId(Context context, int camera, int cameraId) {
-        context.getSharedPreferences(MainActivity.ALARM_SERVICE, Context.MODE_PRIVATE).edit().putInt(
-                camera == FRONT_CAMERA ? FRONT_CAMERA_ID : BACK_CAMERA_ID, cameraId).apply();
+    public static void setCameraId(int camera, int cameraId) {
+        if(camera == FRONT_CAMERA){
+            frontCameraId = cameraId;
+        } else if(camera == BACK_CAMERA){
+            backCameraId = cameraId;
+        }
     }
 
-    public static int getDefaultCameraId(Context context){
-        return context.getSharedPreferences(MainActivity.ALARM_SERVICE, Context.MODE_PRIVATE).getInt(DEFAULT_CAMERA_ID, UNDEFINED);
+    public static int getDefaultCamera(Context context){
+        int defaultCamera = getSharedPreference(context).getInt(DEFAULT_CAMERA, UNDEFINED);
+        if (defaultCamera == UNDEFINED){
+            defaultCamera = hasCamera(BACK_CAMERA) ? BACK_CAMERA : FRONT_CAMERA;
+            setDefaultCamera(context, defaultCamera);
+        }
+        return defaultCamera;
     }
 
-    public static void setDefaultCameraId(Context context, int cameraId){
-        context.getSharedPreferences(MainActivity.ALARM_SERVICE, Context.MODE_PRIVATE).edit().putInt(DEFAULT_CAMERA_ID, cameraId).apply();
+    public static void setDefaultCamera(Context context, int cameraId){
+        getSharedPreference(context).edit().putInt(DEFAULT_CAMERA, cameraId).apply();
     }
 
-    public static int getCameraId(Context context, int camera){
-        return context.getSharedPreferences(MainActivity.ALARM_SERVICE, Context.MODE_PRIVATE).getInt(
-                camera == FRONT_CAMERA ? FRONT_CAMERA_ID : BACK_CAMERA_ID, UNDEFINED);
+    public static int getCameraId(int camera){
+        if(camera == FRONT_CAMERA){
+            return frontCameraId;
+        } else if(camera == BACK_CAMERA){
+            return backCameraId;
+        }
+        return UNDEFINED;
     }
 
-    public static boolean hasCamera(Context context, int cameraId){
-        return getCameraId(context, cameraId) != UNDEFINED;
+    public static boolean hasCamera(int cameraId){
+        return getCameraId(cameraId) != UNDEFINED;
+    }
+
+    private static SharedPreferences preferences = null;
+    private static synchronized SharedPreferences getSharedPreference(Context context){
+        if(preferences == null) {
+            preferences = context.getSharedPreferences(MainActivity.ALARM_SERVICE, Context.MODE_PRIVATE);
+        }
+        return preferences;
     }
 }

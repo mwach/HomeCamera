@@ -8,7 +8,8 @@
     <string name="wifi_lost">WiFi lost</string>
     <string name="recording_started">Recording started</string>
     <string name="recording_ended">Recording finished</string>
-    <string name="camera_not_found">Could not connect to the camera</string>
+    <string name="camera_not_found">No camera detected</string>
+    <string name="cannot_connect_camera">Could not connect to the camera</string>
 
     <string name="front_camera">Front camera</string>
     <string name="back_camera">Back camera</string>

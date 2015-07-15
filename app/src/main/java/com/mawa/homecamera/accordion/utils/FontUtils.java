@@ -96,9 +96,4 @@ public class FontUtils {
         final int len = v.getChildCount();
         processsViewGroup(v, len);
     }
-
-    public static Typeface getTypefaceNormal(AssetManager assetsManager) {
-        initTypefaces(assetsManager);
-        return normal;
-    }
 }

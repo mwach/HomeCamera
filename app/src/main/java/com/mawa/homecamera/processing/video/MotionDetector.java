@@ -2,12 +2,9 @@ package com.mawa.homecamera.processing.video;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
-import android.media.Image;
-import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 
@@ -15,10 +12,16 @@ import java.io.ByteArrayOutputStream;
  * Created by mawa on 13/07/15.
  */
 public class MotionDetector implements Camera.PreviewCallback{
+
+    private MotionDetectorListener listener = null;
+
+    public void setListener(MotionDetectorListener motionDetectorListener){
+        this.listener = motionDetectorListener;
+    }
+
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
 
-        long time = System.currentTimeMillis();
         Camera.Parameters parameters = camera.getParameters();
         int width = parameters.getPreviewSize().width;
         int height = parameters.getPreviewSize().height;
@@ -31,13 +34,6 @@ public class MotionDetector implements Camera.PreviewCallback{
         byte[] bytes = out.toByteArray();
          Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
-        int w2 = bitmap.getWidth();
-        int h2= bitmap.getHeight();
-        bitmap = null;
-
-        long timeEnd = System.currentTimeMillis();
-        long delta = timeEnd - time;
-        double fps = 1000.0/delta;
-
+        listener.onFrame(bitmap);
     }
 }

@@ -8,7 +8,6 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -16,29 +15,29 @@ import android.view.MenuItem;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.mawa.homecamera.processing.video.CameraException;
 import com.mawa.homecamera.processing.video.MotionDetector;
+import com.mawa.homecamera.processing.video.MotionDetectorListener;
 
 import java.io.IOException;
 
 import static android.widget.Toast.LENGTH_LONG;
 
 
-public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener{
+public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, MotionDetectorListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final int UNDEFINED = -1;
-
     private Camera camera;
-    private TextureView textureView;
-
-    private ImageButton recordButton = null;
+    private TextureView previewTextureView;
     private SurfaceTexture surface = null;
 
-    private boolean isRecording = false;
-    private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+    private ImageButton recordButton = null;
+
+    private MotionDetector motionDetector = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,47 +45,36 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        textureView = (TextureView)findViewById(R.id.texture_view);
-        textureView.setSurfaceTextureListener(this);
+        previewTextureView = (TextureView)findViewById(R.id.texture_view);
+        previewTextureView.setSurfaceTextureListener(this);
 
         recordButton = (ImageButton) findViewById(R.id.record_button);
 
+        motionDetector = new MotionDetector();
+        motionDetector.setListener(this);
         detectCameras();
         setGuiIDLEMode();
-
-
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if(Settings.getDefaultCameraId(MainActivity.this) == UNDEFINED){
+    private void detectCameras() {
+        Settings.setCameraId(Settings.FRONT_CAMERA, findCameraId(Camera.CameraInfo.CAMERA_FACING_FRONT));
+        Settings.setCameraId(Settings.BACK_CAMERA, findCameraId(Camera.CameraInfo.CAMERA_FACING_BACK));
+        if(!Settings.hasCamera(Settings.BACK_CAMERA) && !Settings.hasCamera(Settings.FRONT_CAMERA)){
             showAlertDialogAndExit(getString(R.string.camera_not_found));
         }
     }
 
-    private void detectCameras() {
-        int frontCameraId = findCameraId(Camera.CameraInfo.CAMERA_FACING_FRONT);
-        int backCameraId = findCameraId(Camera.CameraInfo.CAMERA_FACING_BACK);
-        if(frontCameraId == UNDEFINED && backCameraId == UNDEFINED){
-            showAlertDialogAndExit(getString(R.string.back_camera));
-        }
-        Settings.setCameraId(MainActivity.this, Settings.BACK_CAMERA, backCameraId);
-        Settings.setCameraId(MainActivity.this, Settings.FRONT_CAMERA, frontCameraId);
-        Settings.setDefaultCameraId(MainActivity.this, frontCameraId != UNDEFINED ? frontCameraId : backCameraId);
-    }
-
-    private int findCameraId(int cameraId) {
+    private int findCameraId(int camera) {
         // Search for the front facing camera
         int numberOfCameras = Camera.getNumberOfCameras();
         for (int i = 0; i < numberOfCameras; i++) {
             Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(i, info);
-            if (info.facing == cameraId) {
-                return cameraId;
+            if (info.facing == camera) {
+                return i;
             }
         }
-        return UNDEFINED;
+        return Settings.UNDEFINED;
     }
 
     @Override
@@ -95,13 +83,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         super.onPause();
     }
 
-    private MotionDetector md = new MotionDetector();
     private void startPreview() {
         try {
             camera.setPreviewTexture(surface);
-            camera.setPreviewCallback(md);
+            camera.setPreviewCallback(motionDetector);
             camera.startPreview();
-            isRecording = true;
         } catch (IOException ioe) {
             ioe.printStackTrace();
             // Something bad happened
@@ -110,45 +96,47 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     private void startRecording() {
 
-        if (getCamera() != null) {
-
+        try {
             setGuiRecordMode();
+            initCamera();
             startPreview();
             Toast.makeText(MainActivity.this, getString(R.string.recording_started), LENGTH_LONG).show();
-        }else{
-            Toast.makeText(MainActivity.this, getString(R.string.recording_started), LENGTH_LONG).show();
+        }catch (CameraException exc){
+            showAlertDialogAndExit(exc.getMessage());
         }
     }
 
     private void stopRecording() {
 
-        Toast.makeText(MainActivity.this, getString(R.string.recording_ended), LENGTH_LONG).show();
         setGuiIDLEMode();
         releaseCamera();
+        Toast.makeText(MainActivity.this, getString(R.string.recording_ended), LENGTH_LONG).show();
     }
 
-    private Camera getCamera() {
+    private Camera initCamera() throws CameraException {
 
         if(camera != null){
             return camera;
         }
-        cameraId = Settings.getDefaultCameraId(MainActivity.this);
+        int cameraId = Settings.getCameraId(Settings.getDefaultCamera(MainActivity.this));
 
             try {
                 camera = Camera.open(cameraId);
             } catch (RuntimeException ex) {
-                Log.e(TAG, "getCamera", ex);
+                Log.e(TAG, "initCamera", ex);
+                throw new CameraException(getString(R.string.cannot_connect_camera));
             }
         return camera;
     }
 
 
     private void releaseCamera() {
-        if(getCamera() != null) {
+        if(camera != null) {
+            camera.stopPreview();
+            camera.setPreviewCallback(null);
             camera.release();
             camera = null;
         }
-        isRecording = false;
     }
 
     private void setGuiRecordMode() {
@@ -159,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 stopRecording();
             }
         });
-        textureView.setVisibility(View.VISIBLE);
+        previewTextureView.setVisibility(View.VISIBLE);
     }
 
     private void setGuiIDLEMode() {
@@ -170,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 startRecording();
             }
         });
-        textureView.setVisibility(View.GONE);
+        previewTextureView.setVisibility(View.GONE);
     }
 
 
@@ -218,21 +206,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         return true;
     }
 
-    private MotionDetector motionDetector;
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-//        new Handler().post(new Runnable() {
-//            public void run() {
-//                Bitmap bmp = textureView.getBitmap();
-////                int[] pixelArray = new int[bmp.getHeight() * bmp.getWidth()];
-////                bmp.getPixels(pixelArray, 0, 0, 0, 0, bmp.getWidth(), bmp.getHeight());
-//                int imgW = bmp.getWidth();
-//                int imgH = bmp.getHeight();
-//                Log.e(TAG, "" + bmp.getHeight());
-//            }
-//        });
-//        Log.e(TAG, "" + 1);
-
     }
 
     private void showAlertDialogAndExit(String message){
@@ -250,4 +225,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     }
 
+    @Override
+    public void onFrame(final Bitmap bitmap) {
+
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                ImageView iv = (ImageView) findViewById(R.id.imageView);
+                iv.setImageBitmap(bitmap);
+            }
+        });
+    }
 }
